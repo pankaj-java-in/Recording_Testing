@@ -19,7 +19,13 @@ package org.kurento.tutorial.groupcall;
 
 import java.io.IOException;
 
+import org.kurento.client.Composite;
+import org.kurento.client.HubPort;
 import org.kurento.client.IceCandidate;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.MediaProfileSpecType;
+import org.kurento.client.RecorderEndpoint;
+import org.kurento.client.WebRtcEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +36,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 /**
@@ -74,6 +81,9 @@ public class CallHandler extends TextWebSocketHandler {
       case "leaveRoom":
         leaveRoom(user);
         break;
+      case "startRecording":
+  		startRecording("room1");
+  		break;
       case "onIceCandidate":
         JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
 
@@ -88,7 +98,14 @@ public class CallHandler extends TextWebSocketHandler {
     }
   }
 
-  @Override
+  private void startRecording(String string) {
+	  System.out.println(string);
+	  Room room = roomManager.getRoom(string);
+	  System.out.println(room);
+	  room.startRecording();
+}
+
+@Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
     UserSession user = registry.removeBySession(session);
     roomManager.getRoom(user.getRoomName()).leave(user);

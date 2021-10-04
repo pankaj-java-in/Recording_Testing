@@ -20,7 +20,12 @@ package org.kurento.tutorial.groupcall;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.kurento.client.Composite;
+import org.kurento.client.HubPort;
 import org.kurento.client.KurentoClient;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.MediaProfileSpecType;
+import org.kurento.client.RecorderEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +40,9 @@ public class RoomManager {
 
   @Autowired
   private KurentoClient kurento;
-
+  
   private final ConcurrentMap<String, Room> rooms = new ConcurrentHashMap<>();
-
+  private static final String RECORDER_FILE_PATH ="file:///home/pankaj/Desktop/File/"+System.currentTimeMillis()+".webm";
   /**
    * Looks for a room in the active room list.
    *
@@ -47,12 +52,19 @@ public class RoomManager {
    *         accessed
    */
   public Room getRoom(String roomName) {
+	  
     log.debug("Searching for room {}", roomName);
     Room room = rooms.get(roomName);
 
     if (room == null) {
+    	MediaPipeline pipeline = kurento.createMediaPipeline();
+		Composite composite = new Composite.Builder(pipeline).build();
+		HubPort hubPort = new HubPort.Builder(composite).build();
+		RecorderEndpoint recorder = new RecorderEndpoint
+				.Builder(composite.getMediaPipeline(), RECORDER_FILE_PATH)
+  			  .withMediaProfile(MediaProfileSpecType.WEBM).build();
       log.debug("Room {} not existent. Will create now!", roomName);
-      room = new Room(roomName, kurento.createMediaPipeline());
+      room = new Room(pipeline, roomName, hubPort, recorder, composite);
       rooms.put(roomName, room);
     }
     log.debug("Room {} found!", roomName);

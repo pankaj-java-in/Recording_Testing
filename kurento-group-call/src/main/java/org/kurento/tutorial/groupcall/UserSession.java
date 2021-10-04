@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.kurento.client.Composite;
 import org.kurento.client.Continuation;
 import org.kurento.client.EventListener;
+import org.kurento.client.HubPort;
 import org.kurento.client.IceCandidate;
 import org.kurento.client.IceCandidateFoundEvent;
 import org.kurento.client.MediaPipeline;
@@ -52,17 +54,22 @@ public class UserSession implements Closeable {
 
   private final String roomName;
   private final WebRtcEndpoint outgoingMedia;
+  private HubPort hubPort1;
   private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
 
   public UserSession(final String name, String roomName, final WebSocketSession session,
-      MediaPipeline pipeline) {
+      MediaPipeline pipeline, Composite composite) {
 
     this.pipeline = pipeline;
     this.name = name;
     this.session = session;
     this.roomName = roomName;
     this.outgoingMedia = new WebRtcEndpoint.Builder(pipeline).build();
-
+    
+    this.hubPort1 = new HubPort.Builder(composite).build();
+    outgoingMedia.connect(this.hubPort1);
+    
+    
     this.outgoingMedia.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
 
       @Override
@@ -186,6 +193,7 @@ public class UserSession implements Closeable {
 
   @Override
   public void close() throws IOException {
+	  this.hubPort1.release();
     log.debug("PARTICIPANT {}: Releasing resources", this.name);
     for (final String remoteParticipantName : incomingMedia.keySet()) {
 

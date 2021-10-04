@@ -27,8 +27,11 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.PreDestroy;
 
+import org.kurento.client.Composite;
 import org.kurento.client.Continuation;
+import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
+import org.kurento.client.RecorderEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.WebSocketSession;
@@ -48,6 +51,12 @@ public class Room implements Closeable {
   private final ConcurrentMap<String, UserSession> participants = new ConcurrentHashMap<>();
   private final MediaPipeline pipeline;
   private final String name;
+  private HubPort hubPort;
+  private RecorderEndpoint recorder;
+  private Composite composite;
+  
+  boolean started = false;
+  
 
   public String getName() {
     return name;
@@ -58,15 +67,33 @@ public class Room implements Closeable {
     this.pipeline = pipeline;
     log.info("ROOM {} has been created", roomName);
   }
+  
+  
 
-  @PreDestroy
+  
+  public Room(MediaPipeline pipeline, String name, HubPort hubPort, RecorderEndpoint recorder, Composite composite) {
+	this.pipeline = pipeline;
+	this.name = name;
+	this.hubPort = hubPort;
+	this.recorder = recorder;
+	this.composite=composite;
+	
+	recorder.connect(hubPort);
+	hubPort.connect(recorder);
+	
+ }
+
+@PreDestroy
   private void shutdown() {
     this.close();
   }
 
   public UserSession join(String userName, WebSocketSession session) throws IOException {
     log.info("ROOM {}: adding participant {}", this.name, userName);
-    final UserSession participant = new UserSession(userName, this.name, session, this.pipeline);
+    final UserSession participant = new UserSession(userName, this.name, session, this.pipeline, composite);
+    if (started) {
+		recorder.record();
+	}
     joinRoom(participant);
     participants.put(participant.getName(), participant);
     sendParticipantNames(participant);
@@ -80,6 +107,7 @@ public class Room implements Closeable {
   }
 
   private Collection<String> joinRoom(UserSession newParticipant) throws IOException {
+	
     final JsonObject newParticipantMsg = new JsonObject();
     newParticipantMsg.addProperty("id", "newParticipantArrived");
     newParticipantMsg.addProperty("name", newParticipant.getName());
@@ -102,6 +130,10 @@ public class Room implements Closeable {
 
   private void removeParticipant(String name) throws IOException {
     participants.remove(name);
+    
+   if (started) {
+	   recorder.record();
+   }
 
     log.debug("ROOM {}: notifying all users that {} is leaving the room", this.name, name);
 
@@ -179,5 +211,11 @@ public class Room implements Closeable {
 
     log.debug("Room {} closed", this.name);
   }
+
+public void startRecording() {
+	started=true;
+	recorder.record();
+	
+}
 
 }

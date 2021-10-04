@@ -69,6 +69,16 @@ function register() {
 	sendMessage(message);
 }
 
+function startRecording(room) {
+	var message = {
+		id : 'startRecording',
+		//name : name,
+		roomName : room,
+	}
+	sendMessage(message);
+	
+}
+
 function onNewParticipant(request) {
 	receiveVideo(request.name);
 }
