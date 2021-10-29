@@ -61,11 +61,12 @@ public class CallHandler extends TextWebSocketHandler {
     final JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
 
     final UserSession user = registry.getBySession(session);
-
+   
     if (user != null) {
-      log.debug("Incoming message from user '{}': {}", user.getName(), jsonMessage);
+    	 System.out.println(user.getSession().getId());
+      log.info("Incoming message from user '{}': {}", user.getName(), jsonMessage);
     } else {
-      log.debug("Incoming message from new user: {}", jsonMessage);
+      log.info("Incoming message from new user: {}", jsonMessage);
     }
 
     switch (jsonMessage.get("id").getAsString()) {
@@ -82,7 +83,7 @@ public class CallHandler extends TextWebSocketHandler {
         leaveRoom(user);
         break;
       case "startRecording":
-  		startRecording("room1");
+  		startRecording(jsonMessage.get("roomName").getAsString());
   		break;
       case "onIceCandidate":
         JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();

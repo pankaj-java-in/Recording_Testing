@@ -47,7 +47,8 @@ public class GroupCallApp implements WebSocketConfigurer {
 
   @Bean
   public KurentoClient kurentoClient() {
-    return KurentoClient.create();
+	  return KurentoClient.create();
+    //return KurentoClient.create("ws://103.46.238.132:8888/kurento");
   }
 
   @Bean
