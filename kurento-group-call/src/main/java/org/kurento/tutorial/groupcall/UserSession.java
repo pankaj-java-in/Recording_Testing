@@ -172,23 +172,28 @@ public class UserSession implements Closeable {
   }
 
   public void cancelVideoFrom(final String senderName) {
-    log.debug("PARTICIPANT {}: canceling video reception from {}", this.name, senderName);
-    final WebRtcEndpoint incoming = incomingMedia.remove(senderName);
+    try {
+    	  log.debug("PARTICIPANT {}: canceling video reception from {}", this.name, senderName);
+    	    final WebRtcEndpoint incoming = incomingMedia.remove(senderName);
 
-    log.debug("PARTICIPANT {}: removing endpoint for {}", this.name, senderName);
-    incoming.release(new Continuation<Void>() {
-      @Override
-      public void onSuccess(Void result) throws Exception {
-        log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
-            UserSession.this.name, senderName);
-      }
+    	    log.debug("PARTICIPANT {}: removing endpoint for {}", this.name, senderName);
+    	    incoming.release(new Continuation<Void>() {
+    	      @Override
+    	      public void onSuccess(Void result) throws Exception {
+    	        log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
+    	            UserSession.this.name, senderName);
+    	      }
 
-      @Override
-      public void onError(Throwable cause) throws Exception {
-        log.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.name,
-            senderName);
-      }
-    });
+    	      @Override
+    	      public void onError(Throwable cause) throws Exception {
+    	        log.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.name,
+    	            senderName);
+    	      }
+    	    });
+	} catch (Exception e) {
+		log.error(e.getLocalizedMessage());
+	}
+	
   }
 
   @Override

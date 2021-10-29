@@ -102,7 +102,6 @@ public class CallHandler extends TextWebSocketHandler {
   private void startRecording(String string) {
 	  System.out.println(string);
 	  Room room = roomManager.getRoom(string);
-	  System.out.println(room);
 	  room.startRecording();
 }
 
