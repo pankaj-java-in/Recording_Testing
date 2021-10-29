@@ -57,7 +57,8 @@ public class RoomManager {
     Room room = rooms.get(roomName);
 
     if (room == null) {
-    	 final String RECORDER_FILE_PATH ="file:///home/ubuntu/kurento/"+System.currentTimeMillis()+".webm";
+    	//final String RECORDER_FILE_PATH ="file:///home/ubuntu/kurento/"+System.currentTimeMillis()+".webm";
+    	final String RECORDER_FILE_PATH ="file:///home/pankaj/Desktop/File/"+System.currentTimeMillis()+".webm";
     	MediaPipeline pipeline = kurento.createMediaPipeline();
 		Composite composite = new Composite.Builder(pipeline).build();
 		HubPort hubPort = new HubPort.Builder(composite).build();

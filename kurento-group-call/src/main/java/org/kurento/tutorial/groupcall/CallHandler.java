@@ -83,7 +83,8 @@ public class CallHandler extends TextWebSocketHandler {
         leaveRoom(user);
         break;
       case "startRecording":
-  		startRecording(jsonMessage.get("roomName").getAsString());
+    	 // String roomName = jsonMessage.get("roomName").getAsString();
+  		startRecording("room1");
   		break;
       case "onIceCandidate":
         JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
